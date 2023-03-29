@@ -18,7 +18,7 @@ enum FILTER_TYPE
     ORER_1_COMPLEMENTARY,
     ODER_2_BUTTERWORTH_HPF,
     ODER_2_NOTCH_FILTER,
-    ODER_2_BANDPASS_FILTER
+    ODER_2_BANDPASS_FILTER,
 };
 enum DISCRETE_METHOD
 {
@@ -33,6 +33,7 @@ public:
     void Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2);
 
     void Init(double fc_set);
+    void reset();
     void Update_Filter(double present_sensor_data);
     double Get_Filtered_Data(void){
         return filtered_data[0];
@@ -72,6 +73,7 @@ public:
     void Init(double fc_set,int n_set);
     // void Init(double fc_set,int n_set,double x0);
     void Update_Filter(double present_sensor_data);
+    void reset();
     double* Get_command( ){
         return ptr_x;
     };

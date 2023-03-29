@@ -128,6 +128,13 @@ void Filter::Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, doub
         }
         Compute_Z_Transform_Coefficient(Discrete_method);
 };
+void Filter::reset()
+{
+    sensor_data[0]=0.0;
+    sensor_data[1]=0.0;
+    sensor_data[2]=0.0;
+}
+
 
 void Filter::Update_Filter(double present_sensor_data)
 {
@@ -195,6 +202,15 @@ void Command_Pre_Filter::Init(double fc_set,int n_set){
         ptr_A_coefficient[n-i] = ptr_A_coefficient[n-i]*tau_pow_temp;
     }
     ptr_A_coefficient[n]=tau_pow_temp;
+}
+
+void Command_Pre_Filter::reset()
+{
+    for (int i = 0; i < (n-1); i++)
+    {
+        ptr_x[i] = 0.0;
+        ptr_x_pre[i] = 0.0;
+    }
 }
 
 void Command_Pre_Filter::Update_Filter(double present_sensor_data){
