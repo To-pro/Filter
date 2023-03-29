@@ -33,7 +33,7 @@ public:
     void Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2);
 
     void Init(double fc_set);
-    void reset();
+    void Reset();
     void Update_Filter(double present_sensor_data);
     double Get_Filtered_Data(void){
         return filtered_data[0];
@@ -73,7 +73,7 @@ public:
     void Init(double fc_set,int n_set);
     // void Init(double fc_set,int n_set,double x0);
     void Update_Filter(double present_sensor_data);
-    void reset();
+    void Reset();
     double* Get_command( ){
         return ptr_x;
     };
@@ -96,6 +96,7 @@ class Moving_Average_Filter
 public:
     void Init(int n_set);
     void Update_Filter(double present_sensor_data);
+    void Reset();
     double Get_Filtered_Data(void){
         return filtered_data[0];
     };
