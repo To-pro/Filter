@@ -74,6 +74,7 @@ public:
     // void Init(double fc_set,int n_set,double x0);
     void Update_Filter(double present_sensor_data);
     void Reset();
+    void Reset(double x_0);
     double* Get_command( ){
         return ptr_x;
     };

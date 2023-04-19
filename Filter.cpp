@@ -213,6 +213,17 @@ void Command_Pre_Filter::Reset()
     }
 }
 
+void Command_Pre_Filter::Reset(double x_0)
+{
+    ptr_x[0] = x_0;
+    ptr_x_pre[0] = x_0;
+    for (int i = 0; i < (n-1); i++)
+    {
+        ptr_x[i] = 0.0;
+        ptr_x_pre[i] = 0.0;
+    }
+}
+
 void Command_Pre_Filter::Update_Filter(double present_sensor_data){
     for (int i = 0; i < (n-1); i++)
     {
