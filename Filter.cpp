@@ -76,7 +76,83 @@ void Filter::Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, doub
         Compute_Z_Transform_Coefficient(Discrete_method);
 }
 
-void Filter::Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2)
+void Filter::Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc, double set_dt)
+    {
+        switch (Filter_type)
+        {
+        case FILTER_TYPE::ORDER_1_LOW_PASS:
+            fc1 = set_fc;
+            tau = 1 / (2 * pi * fc1);
+            b2 = 0.0;
+            b1 = 0.0;
+            b0 = 1;
+            a2 = 0.0;
+            a1 = tau;
+            a0 = 1.0;
+            break;
+        case FILTER_TYPE::ORDER_1_HIGH_PASS:
+            fc1 = set_fc;
+            tau = 1 / (2 * pi * fc1);
+            b2 = 0.0;
+            b1 = tau;
+            b0 = 0.0;
+            a2 = 0.0;
+            a1 = tau;
+            a0 = 1.0;
+            break;
+        case FILTER_TYPE::APPROXIMATED_DIFFERENTIATOR:
+            fc1 = set_fc;
+            tau = 1.0 / (2.0 * pi * fc1);
+            // alpha = 1 / (tau + (interval_t / 1000000.0));
+            b2 = 0.0;
+            b1 = 1.0;
+            b0 = 0.0;
+            a2 = 0.0;
+            a1 = tau;
+            a0 = 1.0;
+            break;
+        case FILTER_TYPE::ORDER_2_LOW_PASS:
+            fc1 = set_fc;
+            tau = 1 / (2 * pi * fc1);
+            b2 = 0.0;
+            b1 = 0.0;
+            b0 = 1;
+            a2 = tau * tau;
+            a1 = 2 * tau;
+            a0 = 1.0;
+            break;
+        case FILTER_TYPE::ODER_2_HIGH_PASS:
+            fc1 = set_fc;
+            tau = 1 / (2 * pi * fc1);
+            b2 = 1.0;
+            b1 = 0.0;
+            b0 = 0.0;
+            a2 = tau * tau;
+            a1 = 4 * pi * fc1;
+            a0 = 4.0 * pi * pi * fc1 * fc1;
+            break;
+        // case FILTER_TYPE::ORER_1_COMPLEMENTARY:
+
+        //     break;
+        case FILTER_TYPE::ODER_2_BUTTERWORTH_HPF:
+            fc1 = set_fc;
+            omega_n = 2 * pi * fc1;
+            damping_ratio = 0.707;
+            b2 = 1.0;
+            b1 = 0.0;
+            b0 = 0.0;
+            a2 = 1;
+            a1 = 2 * omega_n;
+            a0 = omega_n * omega_n;
+            break;
+        default:
+            error_flag = 1;
+            break;
+        }
+        Compute_Z_Transform_Coefficient(Discrete_method,set_dt);
+}
+
+void Filter::Init2fc(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2)
     {
         switch (Filter_type)
         {
@@ -128,6 +204,60 @@ void Filter::Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, doub
         }
         Compute_Z_Transform_Coefficient(Discrete_method);
 };
+
+void Filter::Init2fc(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2, double set_dt)
+    {
+        switch (Filter_type)
+        {
+        case FILTER_TYPE::ORDER_2_LOW_PASS:
+            fc1 = set_fc1;
+            fc2 = set_fc2;
+            b2 = 0.0;
+            b1 = 0.0;
+            b0 = 4.0 * pi * pi * fc1 * fc2;
+            a2 = 1.0;
+            a1 = 2.0 * pi * (fc1 + fc2);
+            a0 = 4.0 * pi * pi * fc1 * fc2;
+            break;
+        case FILTER_TYPE::ODER_2_HIGH_PASS:
+            fc1 = set_fc1;
+            fc2 = set_fc2;
+            b2 = 1.0;
+            b1 = 0.0;
+            b0 = 0.0;
+            a2 = 1.0;
+            a1 = 2.0 * pi * (fc1 + fc2);
+            a0 = 4.0 * pi * pi * fc1 * fc2;
+            break;
+        case FILTER_TYPE::ODER_2_NOTCH_FILTER:
+            fc1 = set_fc1; // center of the filtering frequency
+            fc2 = set_fc2; // Bandwidth of the filtering frequency
+            b2 = 1.0;
+            b1 = 0.0;
+            b0 = 4 * pi * pi * fc1 * fc1;
+            a2 = 1.0;
+            a1 = 2.0 * pi * fc2;
+            a0 = 4.0 * pi * pi * fc1 * fc1;
+            b2 = 0.0;
+            b1 = 2 * damping_ratio * omega_n;
+            b0 = 0.0;
+            a2 = 1.0;
+            a1 = 2 * damping_ratio * omega_n;
+            a0 = omega_n * omega_n;
+            break;
+        case FILTER_TYPE::ODER_2_BANDPASS_FILTER:
+            fc1 = set_fc1;
+            fc2 = set_fc2;
+            omega_n = 2 * pi * fc1;
+            damping_ratio = fc2 / (2 * fc1);
+            break;
+        default:
+            error_flag = 1;
+            break;
+        }
+        Compute_Z_Transform_Coefficient(Discrete_method,set_dt);
+};
+
 void Filter::Reset()
 {
     sensor_data[0]=0.0;
@@ -155,6 +285,36 @@ void Filter::Compute_Z_Transform_Coefficient(DISCRETE_METHOD Discrete_method)
     beta1 = 0.0;
     beta2 = 0.0;
     double T = interval_t / 1000000.0;
+    switch (Discrete_method)
+    {
+    case DISCRETE_METHOD::BACKWARD_METHOD:
+        alpha1 = -(2 * a2 + T * a1) / (a0 * T * T + a1 * T + a2);
+        alpha2 = a2 / (a0 * T * T + a1 * T + a2);
+        beta0 = (b0 * T * T + b1 * T + b2) / (a0 * T * T + a1 * T + a2);
+        beta1 = -(2 * b2 + T * b1) / (a0 * T * T + a1 * T + a2);
+        beta2 = b2 / (a0 * T * T + a1 * T + a2);
+        break;
+    case DISCRETE_METHOD::BILINEAR_METHOD:
+        alpha1 = -(-2 * a0 * T * T + 8 * a2) / (a0 * T * T + 2 * a1 * T + 4 * a2);
+        alpha2 = (a0 * T * T - 2 * a1 * T + 4 * a2) / (a0 * T * T + 2 * a1 * T + 4 * a2);
+        beta0 = (b0 * T * T + 2 * b1 * T + 4 * b2) / (a0 * T * T + 2 * a1 * T + 4 * a2);
+        beta1 = -(-2 * b0 * T * T + 8 * b2) / (a0 * T * T + 2 * a1 * T + 4 * a2);
+        beta2 = (b0 * T * T - 2 * b1 * T + 4 * b2) / (a0 * T * T + 2 * a1 * T + 4 * a2);
+        break;
+    default:
+        error_flag = 1;
+        break;
+    }
+}
+
+void Filter::Compute_Z_Transform_Coefficient(DISCRETE_METHOD Discrete_method,double set_dt)
+{
+    alpha1 = 0.0;
+    alpha2 = 0.0;
+    beta0 = 0.0;
+    beta1 = 0.0;
+    beta2 = 0.0;
+    double T = set_dt;
     switch (Discrete_method)
     {
     case DISCRETE_METHOD::BACKWARD_METHOD:

@@ -30,7 +30,10 @@ class Filter
 public:
 
     void Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc);
-    void Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2);
+    void Init2fc(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2);
+
+    void Init(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc ,double set_dt);//set_dt(s)
+    void Init2fc(FILTER_TYPE Filter_type, DISCRETE_METHOD Discrete_method, double set_fc1, double set_fc2 ,double set_dt);
 
     void Init(double fc_set);
     void Reset();
@@ -60,7 +63,7 @@ protected:
     double a0, a1, a2;
     double b0, b1, b2;
     void Compute_Z_Transform_Coefficient(DISCRETE_METHOD Discrete_method);
-
+    void Compute_Z_Transform_Coefficient(DISCRETE_METHOD Discrete_method,double set_dt);
     // some filter's transfer function use
     double omega_n = 0.0;
     double damping_ratio = 0.0;
