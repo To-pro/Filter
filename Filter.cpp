@@ -377,7 +377,7 @@ void Command_Pre_Filter::Reset(double x_0)
 {
     ptr_x[0] = x_0;
     ptr_x_pre[0] = x_0;
-    for (int i = 0; i < (n-1); i++)
+    for (int i = 1; i < (n-1); i++)
     {
         ptr_x[i] = 0.0;
         ptr_x_pre[i] = 0.0;
